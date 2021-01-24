@@ -37,7 +37,7 @@ mod program_account;
 mod state;
 mod sysvar;
 
-pub use crate::context::{Context, CpiContext};
+pub use crate::context::{Context, CpiContext, StateCpiContext};
 pub use crate::cpi_account::CpiAccount;
 pub use crate::ctor::Ctor;
 pub use crate::program_account::ProgramAccount;
@@ -136,8 +136,8 @@ pub mod prelude {
     pub use super::{
         access_control, account, error, program, state, AccountDeserialize, AccountSerialize,
         Accounts, AccountsExit, AccountsInit, AnchorDeserialize, AnchorSerialize, Context,
-        CpiAccount, CpiContext, Ctor, ProgramAccount, ProgramState, Sysvar, ToAccountInfo,
-        ToAccountInfos, ToAccountMetas,
+        CpiAccount, CpiContext, Ctor, ProgramAccount, ProgramState, StateCpiContext, Sysvar,
+        ToAccountInfo, ToAccountInfos, ToAccountMetas,
     };
 
     pub use borsh;

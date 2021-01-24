@@ -1,5 +1,5 @@
 use crate::parser;
-use crate::{Program, RpcArg, State};
+use crate::{Program, RpcArg, State, StateRpc};
 use heck::CamelCase;
 use quote::quote;
 
@@ -474,6 +474,53 @@ fn instruction_enum_name(program: &Program) -> proc_macro2::Ident {
 }
 
 fn generate_cpi(program: &Program) -> proc_macro2::TokenStream {
+    let state_cpi_methods: Vec<proc_macro2::TokenStream> = program
+        .state
+        .as_ref()
+        .map(|state| {
+            state
+                .methods
+                .iter()
+                .map(|method: &StateRpc| {
+                    let accounts_ident = &method.anchor_ident;
+                    let ix_variant = generate_ix_variant(
+                        program,
+                        method.raw_method.sig.ident.to_string(),
+                        &method.args,
+                        true,
+                    );
+                    let method_name = &method.ident;
+                    let args: Vec<&syn::PatType> =
+                        method.args.iter().map(|arg| &arg.raw_arg).collect();
+
+                    quote! {
+                        pub fn #method_name<'a, 'b, 'c, 'info>(
+                            ctx: StateCpiContext<'a, 'b, 'c, 'info, #accounts_ident<'info>>,
+                            #(#args),*
+                        ) -> ProgramResult {
+                            let ix = {
+                                let ix = __private::instruction::#ix_variant;
+                                let data = AnchorSerialize::try_to_vec(&ix)
+                                    .map_err(|_| ProgramError::InvalidInstructionData)?;
+                                let accounts = ctx.to_account_metas(None);
+                                anchor_lang::solana_program::instruction::Instruction {
+                                    program_id: *ctx.program().key,
+                                    accounts,
+                                    data,
+                                }
+                            };
+                            let mut acc_infos = ctx.to_account_infos();
+                            anchor_lang::solana_program::program::invoke_signed(
+                                &ix,
+                                &acc_infos,
+                                ctx.signer_seeds(),
+                            )
+                        }
+                    }
+                })
+                .collect()
+        })
+        .unwrap_or(vec![]);
     let cpi_methods: Vec<proc_macro2::TokenStream> = program
         .rpcs
         .iter()
@@ -522,6 +569,11 @@ fn generate_cpi(program: &Program) -> proc_macro2::TokenStream {
         #[cfg(feature = "cpi")]
         pub mod cpi {
             use super::*;
+
+            pub mod state {
+                use super::*;
+                #(#state_cpi_methods)*
+            }
 
             #(#cpi_methods)*
         }
