@@ -83,6 +83,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "anchor-attribute-event"
+version = "0.2.1"
+dependencies = [
+ "anchor-syn",
+ "anyhow",
+ "proc-macro2 1.0.24",
+ "quote 1.0.8",
+ "syn 1.0.57",
+]
+
+[[package]]
 name = "anchor-attribute-interface"
 version = "0.2.1"
 dependencies = [
@@ -168,10 +179,12 @@ dependencies = [
  "anchor-attribute-access-control",
  "anchor-attribute-account",
  "anchor-attribute-error",
+ "anchor-attribute-event",
  "anchor-attribute-interface",
  "anchor-attribute-program",
  "anchor-attribute-state",
  "anchor-derive-accounts",
+ "base64 0.13.0",
  "serum-borsh 0.8.1-serum.1",
  "solana-program",
  "thiserror",

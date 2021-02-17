@@ -1,19 +1,19 @@
 [package]
-name = "lockup"
+name = "events"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2018"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "lockup"
+name = "events"
 
 [features]
 no-entrypoint = []
+no-idl = []
 cpi = ["no-entrypoint"]
+default = []
 
 [dependencies]
-#anchor-lang = { git = "https://github.com/project-serum/anchor", features = ["derive"] }
-#anchor-spl = { git = "https://github.com/project-serum/anchor" }
+#anchor-lang = "0.2.1"
 anchor-lang = { path = "/home/armaniferrante/Documents/code/src/github.com/project-serum/anchor/lang" }
-anchor-spl = { path = "/home/armaniferrante/Documents/code/src/github.com/project-serum/anchor/spl" }
