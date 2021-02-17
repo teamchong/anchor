@@ -48,6 +48,7 @@ pub enum Command {
         /// programs.
         #[clap(short, long)]
         skip_deploy: bool,
+        file: Option<String>,
     },
     /// Creates a new program.
     New { name: String },
@@ -158,7 +159,7 @@ fn main() -> Result<()> {
         Command::Idl { subcmd } => idl(subcmd),
         Command::Migrate { url } => migrate(url),
         Command::Launch { url, keypair } => launch(url, keypair),
-        Command::Test { skip_deploy } => test(skip_deploy),
+        Command::Test { skip_deploy, file } => test(skip_deploy, file),
         Command::Airdrop { url } => airdrop(url),
     }
 }
@@ -583,7 +584,7 @@ enum OutFile {
 }
 
 // Builds, deploys, and tests all workspace programs in a single command.
-fn test(skip_deploy: bool) -> Result<()> {
+fn test(skip_deploy: bool, file: Option<String>) -> Result<()> {
     with_workspace(|cfg, _path, _cargo| {
         // Bootup validator, if needed.
         let validator_handle = match cfg.cluster.url() {
@@ -606,10 +607,14 @@ fn test(skip_deploy: bool) -> Result<()> {
         let log_streams = stream_logs(&cfg.cluster.url())?;
 
         // Run the tests.
+        let mut args = vec!["-t", "1000000"];
+        if let Some(ref file) = file {
+            args.push(file);
+        } else {
+            args.push("tests/")
+        }
         if let Err(e) = std::process::Command::new("mocha")
-            .arg("-t")
-            .arg("1000000")
-            .arg("tests/")
+            .args(args)
             .env("ANCHOR_PROVIDER_URL", cfg.cluster.url())
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
